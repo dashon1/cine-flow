@@ -169,8 +169,8 @@ const integrations = {
     UploadFile,
     InvokeLLM: (payload = {}) => callIntegration('InvokeLLM', payload),
     GenerateImage: (payload = {}) => callIntegration('GenerateImage', payload),
-    SendEmail: notWired('SendEmail'),
-    SendSMS: notWired('SendSMS'),
+    SendEmail: (payload = {}) => callIntegration('SendEmail', payload),
+    SendSMS: (payload = {}) => callIntegration('SendSMS', payload),
     ExtractDataFromUploadedFile: notWired('ExtractDataFromUploadedFile'),
   },
 };
