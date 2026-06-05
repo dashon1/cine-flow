@@ -259,7 +259,10 @@ export default function Home() {
                 });
 
                 console.log('Google TTS response:', response);
-                const audioResp = response instanceof Blob ? response : response?.data;
+                let audioResp = response instanceof Blob ? response : response?.data;
+                if (audioResp && !(audioResp instanceof Blob) && audioResp.audio_url) {
+                    audioResp = await fetch(audioResp.audio_url).then(r => r.blob());
+                }
                 if (audioResp instanceof Blob && audioResp.size > 0) {
                     audioBlob = audioResp;
                     audioUrl = URL.createObjectURL(audioBlob);
@@ -277,7 +280,10 @@ export default function Home() {
                 });
 
                 console.log('ElevenLabs response:', response);
-                const audioResp = response instanceof Blob ? response : response?.data;
+                let audioResp = response instanceof Blob ? response : response?.data;
+                if (audioResp && !(audioResp instanceof Blob) && audioResp.audio_url) {
+                    audioResp = await fetch(audioResp.audio_url).then(r => r.blob());
+                }
                 if (audioResp instanceof Blob && audioResp.size > 0) {
                     audioBlob = audioResp;
                     audioUrl = URL.createObjectURL(audioBlob);
@@ -913,7 +919,10 @@ export default function Home() {
                                     language_code: languageCode
                                 });
 
-                                const audioResp = response instanceof Blob ? response : response?.data;
+                                let audioResp = response instanceof Blob ? response : response?.data;
+                if (audioResp && !(audioResp instanceof Blob) && audioResp.audio_url) {
+                    audioResp = await fetch(audioResp.audio_url).then(r => r.blob());
+                }
                                 if (audioResp instanceof Blob && audioResp.size > 0) {
                                     audioBlob = audioResp;
                                     audioUrl = URL.createObjectURL(audioBlob);
@@ -935,7 +944,10 @@ export default function Home() {
                                     model_id: selectedVoiceModel.model_name || 'eleven_multilingual_v2'
                                 });
 
-                                const audioResp = response instanceof Blob ? response : response?.data;
+                                let audioResp = response instanceof Blob ? response : response?.data;
+                if (audioResp && !(audioResp instanceof Blob) && audioResp.audio_url) {
+                    audioResp = await fetch(audioResp.audio_url).then(r => r.blob());
+                }
                                 if (audioResp instanceof Blob && audioResp.size > 0) {
                                     audioBlob = audioResp;
                                     audioUrl = URL.createObjectURL(audioBlob);
