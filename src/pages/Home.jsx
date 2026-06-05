@@ -11,6 +11,18 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Long video renders run as async backend jobs; poll until the URL is ready.
+async function pollVideoJob(jobId, maxMs = 360000) {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    await new Promise((r) => setTimeout(r, 5000));
+    const s = await base44.functions.invoke('getVideoJob', { job_id: jobId });
+    if (s.data?.status === 'done') return s.data.video_url;
+    if (s.data?.status === 'error') throw new Error(s.data.error || 'video generation failed');
+  }
+  throw new Error('video generation timed out');
+}
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 import SpeechToText from '../components/video/SpeechToText';
@@ -1357,9 +1369,11 @@ export default function Home() {
                         aspect_ratio: projectSettings.aspect_ratio
                     });
 
-                    if (videoResponse.data && videoResponse.data.video_url) {
+                    let _falUrl = videoResponse.data?.video_url;
+                    if (!_falUrl && videoResponse.data?.job_id) _falUrl = await pollVideoJob(videoResponse.data.job_id);
+                    if (_falUrl) {
                         videoClips.push({
-                            url: videoResponse.data.video_url,
+                            url: _falUrl,
                             scene_number: imageData.scene_number,
                             duration: imageData.duration || 5,
                             voiceover: voiceData
@@ -1404,8 +1418,10 @@ export default function Home() {
                 settings: projectSettings
             });
 
-            if (response.data && response.data.video_url) {
-                setVideoUrl(response.data.video_url);
+            let _j2vUrl = response.data?.video_url;
+            if (!_j2vUrl && response.data?.job_id) _j2vUrl = await pollVideoJob(response.data.job_id);
+            if (_j2vUrl) {
+                setVideoUrl(_j2vUrl);
                 setGeneratedVideoBlob(null);
                 setProgress(100);
                 setCurrentTask('Template video generation complete!');
