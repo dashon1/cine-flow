@@ -104,18 +104,63 @@ function entityApi(entity) {
   };
 }
 
-const entities = new Proxy({}, {
+// Wrap AIModelConfig to fall back to built-in models when DB is empty.
+const _entityProxy = new Proxy({}, {
   get(_t, name) {
     if (typeof name !== 'string') return undefined;
+    if (name === 'AIModelConfig') {
+      const base = entityApi('AIModelConfig');
+      return {
+        ...base,
+        async list(sort, limit) {
+          const rows = await base.list(sort, limit);
+          return rows.length > 0 ? rows : BUILTIN_MODELS;
+        },
+        async filter(query = {}, sort, limit) {
+          const rows = await base.filter(query, sort, limit);
+          if (rows.length > 0) return rows;
+          // Filter built-ins by query fields
+          let ms = BUILTIN_MODELS;
+          for (const [k, v] of Object.entries(query || {})) ms = ms.filter(m => String(m[k] ?? '') === String(v));
+          return ms;
+        },
+      };
+    }
     return entityApi(name);
   },
 });
+const entities = _entityProxy;
+
+// Hardcoded AI models — shown when the DB has no AIModelConfig records yet.
+const GUEST_KEY = 'cutsflow_guest_id';
+function getOrCreateGuest() {
+  let gid = localStorage.getItem(GUEST_KEY);
+  if (!gid) { gid = `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`; localStorage.setItem(GUEST_KEY, gid); }
+  return { id: gid, email: `${gid}@guest.local`, full_name: 'Creator', role: 'anon', plan_type: 'free' };
+}
+
+const BUILTIN_MODELS = [
+  // LLM
+  { id: 'llm-gpt4o', model_name: 'gpt-4o', provider: 'openai', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Most capable GPT-4 — best storyboards', estimated_time: '5-10s' },
+  { id: 'llm-gpt4o-mini', model_name: 'gpt-4o-mini', provider: 'openai', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'good', description: 'Fast & affordable', estimated_time: '3-5s' },
+  // Image
+  { id: 'img-flux-schnell', model_name: 'fal-ai/flux/schnell', provider: 'fal_ai', model_type: 'image', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'good', description: 'Fastest image gen', estimated_time: '3-5s' },
+  { id: 'img-flux-dev', model_name: 'fal-ai/flux/dev', provider: 'fal_ai', model_type: 'image', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Quality + speed balance', estimated_time: '8-10s' },
+  { id: 'img-sdxl-lightning', model_name: 'fal-ai/fast-lightning-sdxl', provider: 'fal_ai', model_type: 'image', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'good', description: 'Sub-second generations', estimated_time: '1-2s' },
+  // Video
+  { id: 'vid-minimax', model_name: 'fal-ai/minimax/video-01', provider: 'fal_ai', model_type: 'video', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Minimax — fast AI video', estimated_time: '1-2 min', api_parameters: { duration: 5 } },
+  { id: 'vid-wan', model_name: 'fal-ai/wan-i2v/v1.3', provider: 'fal_ai', model_type: 'video', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Wan 2.6 — 1080p quality', estimated_time: '1-2 min', api_parameters: { duration: 5 } },
+  // TTS
+  { id: 'tts-google', model_name: 'en-US-Neural2-C', provider: 'google', model_type: 'tts', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Google Neural2 — natural voices', estimated_time: '2-5s', api_parameters: { voice_name: 'en-US-Neural2-C', language_code: 'en-US' } },
+  { id: 'tts-elevenlabs', model_name: 'eleven_multilingual_v2', provider: 'elevenlabs', model_type: 'tts', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'ultra', description: 'ElevenLabs — most realistic', estimated_time: '5-10s', api_parameters: { voice_id: 'default', model_id: 'eleven_multilingual_v2' } },
+  { id: 'tts-browser', model_name: 'browser', provider: 'browser', model_type: 'tts', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'basic', description: 'Browser TTS (free, instant)', estimated_time: 'instant' },
+];
 
 const auth = {
   async me() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-    return { id: user.id, email: user.email, role: user.role, ...(user.user_metadata || {}) };
+    if (user) return { id: user.id, email: user.email, role: user.role, plan_type: 'pro', ...(user.user_metadata || {}) };
+    return getOrCreateGuest();
   },
   async updateMe(obj = {}) {
     const { data, error } = await supabase.auth.updateUser({ data: obj });

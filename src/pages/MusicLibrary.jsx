@@ -10,8 +10,16 @@ import { UploadFile } from '@/integrations/Core';
 import { Music, Play, Pause, Plus, Edit2, Trash2, Save, X, AlertCircle, CheckCircle2, Volume2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+const SAMPLE_TRACKS = [
+    { id: 'trk-epic', title: 'Epic Cinematic Rise', artist: 'AraM5 Studio', genre: 'cinematic', mood: 'epic', duration: 180, file_url: '', preview_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', is_active: true },
+    { id: 'trk-upbeat', title: 'Upbeat Corporate', artist: 'AraM5 Studio', genre: 'corporate', mood: 'upbeat', duration: 120, file_url: '', preview_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', is_active: true },
+    { id: 'trk-ambient', title: 'Calm Ambient Flow', artist: 'AraM5 Studio', genre: 'ambient', mood: 'calm', duration: 240, file_url: '', preview_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', is_active: true },
+    { id: 'trk-inspire', title: 'Motivational Drive', artist: 'AraM5 Studio', genre: 'motivational', mood: 'inspiring', duration: 150, file_url: '', preview_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', is_active: true },
+    { id: 'trk-dramatic', title: 'Dramatic Impact', artist: 'AraM5 Studio', genre: 'dramatic', mood: 'intense', duration: 90, file_url: '', preview_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', is_active: true },
+];
+
 export default function MusicLibrary() {
-    const [tracks, setTracks] = useState([]);
+    const [tracks, setTracks] = useState(SAMPLE_TRACKS);
     const [isLoading, setIsLoading] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingTrack, setEditingTrack] = useState(null);
@@ -58,7 +66,7 @@ export default function MusicLibrary() {
         setIsLoading(true);
         try {
             const allTracks = await MusicTrack.list('-updated_date');
-            setTracks(allTracks);
+            if (allTracks.length > 0) setTracks(allTracks);
         } catch (err) {
             setError('Failed to load music tracks');
         }

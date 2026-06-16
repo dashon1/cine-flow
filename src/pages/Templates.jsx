@@ -10,8 +10,17 @@ import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+const DEFAULT_TEMPLATES = [
+    { id: 'tpl-promo', title: 'Product Promo', description: 'Showcase a product with punchy scenes and a strong CTA.', category: 'marketing', style: 'dynamic', duration: 30, is_premium: false, is_active: true, thumbnail_url: null, scene_count: 4, prompt_template: 'Create a 30-second product promo video for {product}. Use high-energy visuals and a clear call to action.' },
+    { id: 'tpl-story', title: 'Brand Story', description: 'Tell your brand origin story in a cinematic 60-second video.', category: 'storytelling', style: 'cinematic', duration: 60, is_premium: false, is_active: true, thumbnail_url: null, scene_count: 6, prompt_template: 'Create a brand story video for {brand}. Cover the founding moment, core values, and vision.' },
+    { id: 'tpl-explainer', title: 'Explainer Video', description: 'Walk viewers through how your product or service works.', category: 'education', style: 'clean', duration: 90, is_premium: false, is_active: true, thumbnail_url: null, scene_count: 6, prompt_template: 'Create an explainer video for {product}. Describe the problem, the solution, and key features.' },
+    { id: 'tpl-testimonial', title: 'Testimonial', description: 'Share a customer success story with social proof visuals.', category: 'social_proof', style: 'warm', duration: 45, is_premium: false, is_active: true, thumbnail_url: null, scene_count: 5, prompt_template: 'Create a testimonial video for {customer} using {product}. Highlight the before/after transformation.' },
+    { id: 'tpl-ugc', title: 'UGC Ad', description: 'Raw, authentic ad in the style of user-generated content.', category: 'social', style: 'authentic', duration: 30, is_premium: false, is_active: true, thumbnail_url: null, scene_count: 4, prompt_template: 'Create a UGC-style video ad for {product}. Make it feel like a real person sharing their experience.' },
+    { id: 'tpl-tutorial', title: 'Tutorial / How-To', description: 'Step-by-step instructional video for your audience.', category: 'education', style: 'clear', duration: 120, is_premium: false, is_active: true, thumbnail_url: null, scene_count: 8, prompt_template: 'Create a step-by-step tutorial showing how to {task}. Be clear and include tips for beginners.' },
+];
+
 export default function Templates() {
-    const [templates, setTemplates] = useState([]);
+    const [templates, setTemplates] = useState(DEFAULT_TEMPLATES);
     const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [script, setScript] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
@@ -35,7 +44,7 @@ export default function Templates() {
     const loadTemplates = async () => {
         try {
             const allTemplates = await base44.entities.VideoTemplate.filter({ is_active: true });
-            setTemplates(allTemplates);
+            if (allTemplates.length > 0) setTemplates(allTemplates);
         } catch (err) {
             console.error('Error loading templates:', err);
         }
