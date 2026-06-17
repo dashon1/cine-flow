@@ -140,11 +140,11 @@ function getOrCreateGuest() {
 }
 
 const BUILTIN_MODELS = [
-  // LLM — FREE tier (verified via OpenRouter /models, $0 cost)
-  { id: 'llm-hermes-405b-free', model_name: 'nousresearch/hermes-3-llama-3.1-405b:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'ultra', description: '🆓 Hermes 3 405B — best free model, premium storyboards', estimated_time: '8-15s' },
+  // LLM — FREE tier (verified working via OpenRouter /models + live test)
+  { id: 'llm-gpt-oss-120b-free', model_name: 'openai/gpt-oss-120b:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: '🆓 GPT OSS 120B — free, reliable (recommended)', estimated_time: '6-12s' },
+  { id: 'llm-nemotron-550b-free', model_name: 'nvidia/nemotron-3-ultra-550b-a55b:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'ultra', description: '🆓 Nemotron Ultra 550B — NVIDIA free, very capable', estimated_time: '10-20s' },
+  { id: 'llm-hermes-405b-free', model_name: 'nousresearch/hermes-3-llama-3.1-405b:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'ultra', description: '🆓 Hermes 3 405B — free, premium quality', estimated_time: '8-15s' },
   { id: 'llm-llama-70b-free', model_name: 'meta-llama/llama-3.3-70b-instruct:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: '🆓 Llama 3.3 70B — free, great quality', estimated_time: '5-10s' },
-  { id: 'llm-nemotron-550b-free', model_name: 'nvidia/nemotron-3-ultra-550b-a55b:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'ultra', description: '🆓 Nemotron Ultra 550B — NVIDIA free giant', estimated_time: '10-20s' },
-  { id: 'llm-gpt-oss-120b-free', model_name: 'openai/gpt-oss-120b:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: '🆓 GPT OSS 120B — OpenAI open model, free', estimated_time: '6-12s' },
   { id: 'llm-llama-3b-free', model_name: 'meta-llama/llama-3.2-3b-instruct:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'basic', description: '🆓 Llama 3.2 3B — free, fastest option', estimated_time: '2-4s' },
   // LLM — PAID: Claude (best quality)
   { id: 'llm-claude-sonnet', model_name: 'anthropic/claude-sonnet-4-6', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Claude Sonnet 4.6 — best storyboards (recommended)', estimated_time: '5-8s' },
