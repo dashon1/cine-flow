@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Download, Wand2, Video, ChevronRight, Film, FileText, Upload, Settings as SettingsIcon, Mic, Image as ImageIcon, Music } from "lucide-react";
+import { AlertCircle, Download, Wand2, Video, ChevronRight, Film, FileText, Upload, Settings as SettingsIcon, Mic, Image as ImageIcon, Music, Clock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { base44 } from "@/api/base44Client";
@@ -2968,6 +2968,30 @@ export default function Home() {
                             onSelect={(mode) => setProjectSettings({ ...projectSettings, video_generation_mode: mode })}
                             userTier={userTier}
                         />
+
+                        <Card className="bg-white/60 backdrop-blur-sm shadow-xl">
+                            <CardHeader className="pb-3">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-purple-500" />
+                                    Video Duration
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                                <select
+                                    value={String(projectSettings.target_duration || 60)}
+                                    onChange={(e) => setProjectSettings({ ...projectSettings, target_duration: parseInt(e.target.value) })}
+                                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                >
+                                    <option value="15">15 seconds — Quick clip</option>
+                                    <option value="30">30 seconds — Short ad</option>
+                                    <option value="60">1 minute — Standard</option>
+                                    <option value="90">1.5 minutes</option>
+                                    <option value="120">2 minutes</option>
+                                    <option value="180">3 minutes</option>
+                                    <option value="300">5 minutes — Long form</option>
+                                </select>
+                            </CardContent>
+                        </Card>
 
                         <Card className="bg-white/60 backdrop-blur-sm shadow-xl">
                             <CardHeader>

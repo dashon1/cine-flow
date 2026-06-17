@@ -16,30 +16,6 @@ export default function ExportSettings({ settings, onUpdate }) {
             <CardContent className="space-y-4">
                 <div>
                     <Label className="text-sm mb-2 block flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        Target Duration
-                    </Label>
-                    <Select
-                        value={String(settings.target_duration || 60)}
-                        onValueChange={(value) => onUpdate({ ...settings, target_duration: parseInt(value) })}
-                    >
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="15">15 seconds (Quick clip)</SelectItem>
-                            <SelectItem value="30">30 seconds (Short ad)</SelectItem>
-                            <SelectItem value="60">1 minute (Standard)</SelectItem>
-                            <SelectItem value="90">1.5 minutes</SelectItem>
-                            <SelectItem value="120">2 minutes</SelectItem>
-                            <SelectItem value="180">3 minutes</SelectItem>
-                            <SelectItem value="300">5 minutes (Long form)</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div>
-                    <Label className="text-sm mb-2 block flex items-center gap-1">
                         <Maximize className="w-4 h-4" />
                         Aspect Ratio
                     </Label>
