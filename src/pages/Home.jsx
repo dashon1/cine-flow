@@ -142,6 +142,49 @@ export default function Home() {
     const [regeneratingSceneIndex, setRegeneratingSceneIndex] = useState(null);
     const [regeneratingVoiceIndex, setRegeneratingVoiceIndex] = useState(null);
     const [projectName, setProjectName] = useState('');
+    const [savedVideosKey, setSavedVideosKey] = useState(0);
+
+    const saveVideoToProfile = async (videoBlob, mode, directUrl = null) => {
+        try {
+            const user = await base44.auth.me();
+            let savedUrl = directUrl;
+            let fileSize = null;
+
+            if (videoBlob) {
+                fileSize = videoBlob.size;
+                const ext = videoBlob.type.includes('mp4') ? 'mp4' : 'webm';
+                const path = `cutsflow/videos/${user.id}/${Date.now()}.${ext}`;
+                const { error: uploadError } = await base44.supabase.storage
+                    .from('uploads')
+                    .upload(path, videoBlob, { cacheControl: '3600', upsert: false, contentType: videoBlob.type });
+                if (uploadError) throw uploadError;
+                const { data: urlData } = base44.supabase.storage.from('uploads').getPublicUrl(path);
+                savedUrl = urlData.publicUrl;
+            }
+
+            const scenes = storyboard?.scenes || generatedImages;
+            const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 5), 0);
+            const thumbnailUrl = generatedImages[0]?.url || null;
+
+            await base44.entities.GeneratedVideo.create({
+                title: projectName || 'Untitled Video',
+                video_url: savedUrl,
+                thumbnail_url: thumbnailUrl,
+                status: 'completed',
+                resolution: projectSettings.resolution || '720p',
+                aspect_ratio: projectSettings.aspect_ratio || '16:9',
+                duration: totalDuration,
+                file_size: fileSize,
+                generation_mode: mode,
+                scenes_count: generatedImages.length,
+                created_by: user.email,
+            });
+
+            setSavedVideosKey(k => k + 1);
+        } catch (err) {
+            console.error('Failed to save video to profile:', err);
+        }
+    };
 
     const getActivePrompt = async (promptType) => {
         try {
@@ -1396,6 +1439,7 @@ export default function Home() {
             setVideoUrl(videoClips[0].url);
             setProgress(100);
             setCurrentTask('AI Video generation complete!');
+            saveVideoToProfile(null, 'fal_ai', videoClips[0].url);
 
         } catch (err) {
             console.error("AI video generation error:", err);
@@ -1425,6 +1469,7 @@ export default function Home() {
                 setGeneratedVideoBlob(null);
                 setProgress(100);
                 setCurrentTask('Template video generation complete!');
+                saveVideoToProfile(null, 'json2video', _j2vUrl);
             } else {
                 throw new Error('Json2video failed to generate video');
             }
@@ -1558,6 +1603,7 @@ export default function Home() {
                         setCurrentTask('Video generation complete!');
 
                         audioContext.close();
+                        saveVideoToProfile(videoBlob, 'canvas');
                     } else {
                         setError('Generated video is empty.');
                     }
@@ -2954,7 +3000,7 @@ export default function Home() {
                             )}
                         </AnimatePresence>
 
-                        <SavedVideosManager />
+                        <SavedVideosManager key={savedVideosKey} />
 
                         <Card className="bg-white/60 backdrop-blur-sm shadow-xl">
                             <CardHeader>
