@@ -140,9 +140,11 @@ function getOrCreateGuest() {
 }
 
 const BUILTIN_MODELS = [
-  // LLM
-  { id: 'llm-gpt4o', model_name: 'gpt-4o', provider: 'openai', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Most capable GPT-4 — best storyboards', estimated_time: '5-10s' },
-  { id: 'llm-gpt4o-mini', model_name: 'gpt-4o-mini', provider: 'openai', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'good', description: 'Fast & affordable', estimated_time: '3-5s' },
+  // LLM — Claude first (best for storyboards in 2026)
+  { id: 'llm-claude-sonnet', model_name: 'anthropic/claude-sonnet-4-6', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Claude Sonnet 4.6 — best storyboards (recommended)', estimated_time: '5-8s' },
+  { id: 'llm-claude-opus', model_name: 'anthropic/claude-opus-4-8', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'ultra', description: 'Claude Opus 4.8 — most powerful, richest narratives', estimated_time: '8-15s' },
+  { id: 'llm-gpt4o', model_name: 'gpt-4o', provider: 'openai', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'GPT-4o — solid fallback', estimated_time: '5-10s' },
+  { id: 'llm-gpt4o-mini', model_name: 'gpt-4o-mini', provider: 'openai', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'good', description: 'GPT-4o mini — fast & affordable', estimated_time: '3-5s' },
   // Image
   { id: 'img-flux-schnell', model_name: 'fal-ai/flux/schnell', provider: 'fal_ai', model_type: 'image', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'good', description: 'Fastest image gen', estimated_time: '3-5s' },
   { id: 'img-flux-dev', model_name: 'fal-ai/flux/dev', provider: 'fal_ai', model_type: 'image', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Quality + speed balance', estimated_time: '8-10s' },
