@@ -140,7 +140,13 @@ function getOrCreateGuest() {
 }
 
 const BUILTIN_MODELS = [
-  // LLM — Claude first (best for storyboards in 2026)
+  // LLM — FREE tier (OpenRouter free models, $0 cost)
+  { id: 'llm-deepseek-v3-free', model_name: 'deepseek/deepseek-chat-v3-0324:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: '🆓 DeepSeek V3 — best free model for storyboards', estimated_time: '5-10s' },
+  { id: 'llm-deepseek-r1-free', model_name: 'deepseek/deepseek-r1:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: '🆓 DeepSeek R1 — free, strong reasoning & narratives', estimated_time: '8-15s' },
+  { id: 'llm-gemini-flash-free', model_name: 'google/gemini-2.0-flash-exp:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'good', description: '🆓 Gemini 2.0 Flash — free & fast', estimated_time: '3-6s' },
+  { id: 'llm-qwen-72b-free', model_name: 'qwen/qwen-2.5-72b-instruct:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'good', description: '🆓 Qwen 2.5 72B — free, high quality', estimated_time: '6-12s' },
+  { id: 'llm-llama-8b-free', model_name: 'meta-llama/llama-3.1-8b-instruct:free', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'basic', description: '🆓 Llama 3.1 8B — free, fastest response', estimated_time: '2-4s' },
+  // LLM — PAID: Claude (best quality)
   { id: 'llm-claude-sonnet', model_name: 'anthropic/claude-sonnet-4-6', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'Claude Sonnet 4.6 — best storyboards (recommended)', estimated_time: '5-8s' },
   { id: 'llm-claude-opus', model_name: 'anthropic/claude-opus-4-8', provider: 'openrouter', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'ultra', description: 'Claude Opus 4.8 — most powerful, richest narratives', estimated_time: '8-15s' },
   { id: 'llm-gpt4o', model_name: 'gpt-4o', provider: 'openai', model_type: 'llm', tier_access: ['free','pro','enterprise'], is_active: true, quality_rating: 'excellent', description: 'GPT-4o — solid fallback', estimated_time: '5-10s' },
