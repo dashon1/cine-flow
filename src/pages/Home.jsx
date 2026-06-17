@@ -98,7 +98,8 @@ export default function Home() {
         selected_image_model: null,
         selected_voice_model: null,
         video_generation_mode: 'canvas',
-        reference_strength: 0.85
+        reference_strength: 0.85,
+        target_duration: 60
     });
 
     const [currentProject, setCurrentProject] = useState(null);
@@ -652,7 +653,7 @@ export default function Home() {
 
             const supportsTimestamps = selectedLLMModel.supports_timestamps || false;
 
-            const detectedDuration = detectDurationFromScript(script);
+            const detectedDuration = projectSettings.target_duration || detectDurationFromScript(script);
             const selectedImageModel = availableModels.image.find(m => m.id === projectSettings.selected_image_model);
             const optimalSceneCount = calculateOptimalSceneCount(detectedDuration, selectedImageModel);
             const sceneDuration = Math.max(4, Math.min(8, Math.ceil(detectedDuration / optimalSceneCount)));
