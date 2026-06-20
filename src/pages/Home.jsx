@@ -1372,8 +1372,8 @@ export default function Home() {
 
         const mode = projectSettings.video_generation_mode;
 
-        if (mode === 'fal_runway' || mode === 'fal_minimax') {
-            await assembleVideoWithAI(images, voiceoverData, mode);
+        if (mode === 'fal_ai') {
+            await assembleVideoWithAI(images, voiceoverData);
         } else if (mode === 'json2video') {
             await assembleVideoWithJson2Video(images, voiceoverData);
         } else {
@@ -1381,8 +1381,11 @@ export default function Home() {
         }
     };
 
-    const assembleVideoWithAI = async (images, voiceoverData, mode) => {
+    const assembleVideoWithAI = async (images, voiceoverData) => {
         setCurrentTask('Generating AI video with real motion...');
+
+        const selectedModelDef = (availableModels.video || []).find(m => m.id === projectSettings.selected_video_model);
+        const modelSlug = selectedModelDef?.model_name || 'fal-ai/minimax/video-01';
 
         try {
             const videoClips = [];
@@ -1400,7 +1403,7 @@ export default function Home() {
 
                 try {
                     const motionPrompt = `
-                        ${imageData.description}. 
+                        ${imageData.description}.
                         Smooth camera movement, cinematic motion, ${imageData.effect} effect.
                         Dynamic and engaging, professional cinematography.
                     `.trim();
@@ -1408,9 +1411,7 @@ export default function Home() {
                     const videoResponse = await base44.functions.invoke('generateVideoFal', {
                         prompt: motionPrompt,
                         image_url: imageData.url,
-                        model: mode === 'fal_runway'
-                            ? 'fal-ai/runway-gen3/turbo/image-to-video'
-                            : 'fal-ai/minimax/video-01',
+                        model: modelSlug,
                         duration: imageData.duration || 5,
                         aspect_ratio: projectSettings.aspect_ratio
                     });
@@ -2166,7 +2167,8 @@ export default function Home() {
     };
 
     const canProceedStep4 = () => {
-        return projectSettings.selected_video_model && projectName.trim().length > 0;
+        if (projectSettings.video_generation_mode === 'fal_ai' && !projectSettings.selected_video_model) return false;
+        return projectName.trim().length > 0;
     };
 
     const handleSaveProject = async () => {
@@ -2824,7 +2826,7 @@ export default function Home() {
                                     />
                                 </div>
 
-                                {availableModels.video.length > 0 && (
+                                {availableModels.video.length > 0 && projectSettings.video_generation_mode === 'fal_ai' && (
                                     <div className="p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
                                         <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
                                             <Video className="w-5 h-5" />
@@ -2843,7 +2845,7 @@ export default function Home() {
                                             label="Video Model"
                                             disabled={isProcessing}
                                         />
-                                        {!projectSettings.selected_video_model && (
+                                        {projectSettings.video_generation_mode === 'fal_ai' && !projectSettings.selected_video_model && (
                                             <Alert className="mt-3 border-amber-500 bg-amber-50">
                                                 <AlertCircle className="h-4 w-4 text-amber-600" />
                                                 <AlertDescription className="text-amber-800 text-sm">

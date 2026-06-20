@@ -22,51 +22,19 @@ const VIDEO_MODES = [
         tier: ['free', 'pro', 'enterprise']
     },
     {
-        id: 'fal_runway',
-        name: 'AI Video (Runway)',
+        id: 'fal_ai',
+        name: 'AI Video',
         icon: Sparkles,
-        description: 'Real AI-generated video with motion',
+        description: 'Real AI-generated video — choose from 19 models',
         features: [
-            'True video generation',
-            'Camera movements',
-            'Subject animation',
-            'Hollywood quality'
+            'Kling, Runway, Veo 3, Seadance & more',
+            '5 cheap / 7 standard / 7 upscale tiers',
+            'Audio-enabled: Veo 3, Seadance, Minimax Live',
+            'From $0.01 to $0.20 per scene'
         ],
-        time: '2-5 minutes',
-        quality: 'Premium',
-        cost: '$0.05/scene',
-        tier: ['pro', 'enterprise']
-    },
-    {
-        id: 'fal_minimax',
-        name: 'AI Video (Minimax)',
-        icon: Sparkles,
-        description: 'Fast AI video generation',
-        features: [
-            'Quick AI generation',
-            'Natural movements',
-            'Cost-effective',
-            'Good quality'
-        ],
-        time: '1-2 minutes',
-        quality: 'Excellent',
-        cost: '$0.02/scene',
-        tier: ['pro', 'enterprise']
-    },
-    {
-        id: 'json2video',
-        name: 'Template Video',
-        icon: Sparkles,
-        description: 'Professional templates with transitions',
-        features: [
-            'Pre-built templates',
-            'Professional transitions',
-            'Background music',
-            'Text overlays'
-        ],
-        time: '1-3 minutes',
-        quality: 'Excellent',
-        cost: '$0.10/video',
+        time: '1–6 minutes',
+        quality: 'Good → Ultra',
+        cost: '$0.01–$0.20/scene',
         tier: ['pro', 'enterprise']
     }
 ];

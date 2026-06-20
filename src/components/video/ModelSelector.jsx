@@ -37,13 +37,30 @@ export default function ModelSelector({
     };
 
     const groupedModels = models.reduce((acc, model) => {
-        const provider = model.provider;
-        if (!acc[provider]) {
-            acc[provider] = [];
-        }
-        acc[provider].push(model);
+        const key = (model.model_type === 'video' && model.video_tier)
+            ? `video_${model.video_tier}`
+            : model.provider;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(model);
         return acc;
     }, {});
+
+    const TIER_ORDER = ['video_cheap', 'video_standard', 'video_upscale'];
+    const sortedGroupKeys = Object.keys(groupedModels).sort((a, b) => {
+        const ai = TIER_ORDER.indexOf(a);
+        const bi = TIER_ORDER.indexOf(b);
+        if (ai !== -1 && bi !== -1) return ai - bi;
+        if (ai !== -1) return -1;
+        if (bi !== -1) return 1;
+        return 0;
+    });
+
+    const getGroupLabel = (key) => {
+        if (key === 'video_cheap') return '⚡ Cheap — Fast & Affordable';
+        if (key === 'video_standard') return '✨ Standard — Best Balance';
+        if (key === 'video_upscale') return '👑 Upscale — Max Quality';
+        return key.replace(/_/g, ' ');
+    };
 
     const selectedModel = models.find(m => m.id === selectedModelId);
 
@@ -72,24 +89,18 @@ export default function ModelSelector({
                     <SelectValue placeholder="Select model..." />
                 </SelectTrigger>
                 <SelectContent className="max-h-[400px]">
-                    {Object.entries(groupedModels).map(([provider, providerModels]) => (
+                    {sortedGroupKeys.map((provider) => (
                         <div key={provider}>
                             <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 uppercase">
-                                {provider.replace('_', ' ')}
+                                {getGroupLabel(provider)}
                             </div>
-                            {providerModels.map((model) => (
+                            {groupedModels[provider].map((model) => (
                                 <SelectItem key={model.id} value={model.id}>
                                     <div className="flex flex-col gap-1 w-full">
                                         <div className="flex items-center justify-between gap-3 w-full">
                                             <div className="flex items-center gap-2 min-w-0 flex-1">
                                                 {getQualityIcon(model.quality_rating)}
-                                                <span className="font-medium truncate">{model.model_name}</span>
-                                                <Badge variant="outline" className="text-xs px-1.5 py-0 shrink-0">
-                                                    {model.provider === 'elevenlabs' ? 'ElevenLabs' : 
-                                                     model.provider === 'google' ? 'Google' :
-                                                     model.provider === 'local' ? 'Browser' :
-                                                     model.provider.replace('_', ' ')}
-                                                </Badge>
+                                                <span className="font-medium truncate">{model.name || model.model_name}</span>
                                                 {model.model_variant && (
                                                     <span className="text-xs text-slate-500">({model.model_variant})</span>
                                                 )}
@@ -102,10 +113,10 @@ export default function ModelSelector({
                                         </div>
                                         {model.model_type === 'video' && (
                                             <div className="flex items-center gap-1">
-                                                {model.category === 'animated_avatar' || model.provider === 'canvas' || model.provider === 'json2video' ? (
+                                                {model.has_audio ? (
                                                     <div className="flex items-center gap-1 text-xs text-green-600">
                                                         <Volume2 className="w-3 h-3" />
-                                                        <span>Audio Support</span>
+                                                        <span>Audio + Video</span>
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-1 text-xs text-amber-600">
