@@ -146,8 +146,10 @@ export default function Home() {
     const [savedVideosKey, setSavedVideosKey] = useState(0);
 
     const saveVideoToProfile = async (videoBlob, mode, directUrl = null) => {
+        console.log('[saveVideo] called mode:', mode, 'hasBlob:', !!videoBlob, 'directUrl:', directUrl?.slice(0,40));
         try {
             const user = await base44.auth.me();
+            console.log('[saveVideo] user:', user?.email);
             let savedUrl = directUrl;
             let fileSize = null;
 
@@ -1604,6 +1606,7 @@ export default function Home() {
                         setCurrentTask('Video generation complete!');
 
                         audioContext.close();
+                        console.log('[canvas] render complete, blob size:', videoBlob.size, 'calling saveVideoToProfile');
                         saveVideoToProfile(videoBlob, 'canvas');
                     } else {
                         setError('Generated video is empty.');
