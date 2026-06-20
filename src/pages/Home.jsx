@@ -1408,12 +1408,14 @@ export default function Home() {
                         Dynamic and engaging, professional cinematography.
                     `.trim();
 
-                    const videoResponse = await base44.functions.invoke('generateVideoFal', {
+                    const isKei = selectedModelDef?.provider === 'kei_ai';
+                    const videoResponse = await base44.functions.invoke(isKei ? 'generateVideoKei' : 'generateVideoFal', {
                         prompt: motionPrompt,
                         image_url: imageData.url,
                         model: modelSlug,
                         duration: imageData.duration || 5,
-                        aspect_ratio: projectSettings.aspect_ratio
+                        aspect_ratio: projectSettings.aspect_ratio,
+                        generate_audio: selectedModelDef?.has_audio || false,
                     });
 
                     let _falUrl = videoResponse.data?.video_url;
