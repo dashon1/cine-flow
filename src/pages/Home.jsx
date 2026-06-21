@@ -2784,76 +2784,71 @@ export default function Home() {
                                     })()}
                                     <div className="mt-4 space-y-3">
                                         <h4 className="text-sm font-semibold text-slate-700">Generated Voiceovers</h4>
-                                        {voiceovers.map((vo, index) => (
-                                            <div key={index} className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-green-300 transition-colors">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <Badge variant="outline" className="font-medium">Scene {vo.scene_number}</Badge>
-                                                        {vo.audioUrl || vo.audioBlob ? (
-                                                            <Badge className="bg-green-100 text-green-700 border-green-300">
-                                                                ✓ Audio Ready
-                                                            </Badge>
-                                                        ) : (
-                                                            <Badge className="bg-red-100 text-red-700 border-red-300">
-                                                                ⚠ No Audio
-                                                            </Badge>
-                                                        )}
+                                        {voiceovers.map((vo, index) => {
+                                            const hasDialogue = vo.dialogue && vo.dialogue.trim().length > 0;
+                                            const hasAudio = vo.audioUrl || vo.audioBlob;
+
+                                            // Visual-only scene — show minimal collapsed row, no error
+                                            if (!hasDialogue && !hasAudio) {
+                                                return (
+                                                    <div key={index} className="px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 flex items-center gap-3">
+                                                        <Badge variant="outline" className="text-xs text-gray-500 font-medium flex-shrink-0">Scene {vo.scene_number}</Badge>
+                                                        <span className="text-xs text-gray-400 italic">Visual scene — no voiceover</span>
                                                     </div>
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={(e) => {
-                                                                console.log('🔘 Regenerate button clicked for scene', index);
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                regenerateVoiceover(index);
-                                                            }}
-                                                            disabled={regeneratingVoiceIndex !== null}
-                                                            className="flex-shrink-0 hover:bg-green-50 hover:border-green-500 min-w-[110px]"
-                                                        >
-                                                            {regeneratingVoiceIndex === index ? (
-                                                                <>
-                                                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin mr-2" />
-                                                                    <span className="text-xs">Regenerating...</span>
-                                                                </>
+                                                );
+                                            }
+
+                                            return (
+                                                <div key={index} className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-green-300 transition-colors">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <Badge variant="outline" className="font-medium">Scene {vo.scene_number}</Badge>
+                                                            {hasAudio ? (
+                                                                <Badge className="bg-green-100 text-green-700 border-green-300">✓ Audio Ready</Badge>
                                                             ) : (
-                                                                <>
-                                                                    <Wand2 className="w-4 h-4 mr-2" />
-                                                                    <span className="text-xs font-medium">Regenerate</span>
-                                                                </>
+                                                                <Badge className="bg-amber-100 text-amber-700 border-amber-300">⚠ No Audio</Badge>
                                                             )}
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={(e) => {
-                                                                console.log('🧪 Test (new key) clicked for scene', index);
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                regenerateVoiceover(index, true);
-                                                            }}
-                                                            disabled={regeneratingVoiceIndex !== null}
-                                                            className="flex-shrink-0 hover:bg-amber-50 hover:border-amber-500 min-w-[130px]"
-                                                        >
-                                                            <Wand2 className="w-4 h-4 mr-2" />
-                                                            <span className="text-xs font-medium">Test (new key)</span>
-                                                        </Button>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); regenerateVoiceover(index); }}
+                                                                disabled={regeneratingVoiceIndex !== null}
+                                                                className="flex-shrink-0 hover:bg-green-50 hover:border-green-500 min-w-[110px]"
+                                                            >
+                                                                {regeneratingVoiceIndex === index ? (
+                                                                    <><div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin mr-2" /><span className="text-xs">Regenerating...</span></>
+                                                                ) : (
+                                                                    <><Wand2 className="w-4 h-4 mr-2" /><span className="text-xs font-medium">Regenerate</span></>
+                                                                )}
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); regenerateVoiceover(index, true); }}
+                                                                disabled={regeneratingVoiceIndex !== null}
+                                                                className="flex-shrink-0 hover:bg-amber-50 hover:border-amber-500 min-w-[130px]"
+                                                            >
+                                                                <Wand2 className="w-4 h-4 mr-2" />
+                                                                <span className="text-xs font-medium">Test (new key)</span>
+                                                            </Button>
+                                                        </div>
                                                     </div>
+                                                    <p className="text-sm text-gray-700 mb-3 leading-relaxed">{vo.dialogue}</p>
+                                                    {hasAudio ? (
+                                                        <audio controls className="w-full" src={vo.audioUrl} />
+                                                    ) : (
+                                                        <div className="p-3 bg-amber-50 rounded border border-amber-200">
+                                                            <p className="text-sm text-amber-700 font-medium">Click "Regenerate" to generate audio for this scene.</p>
+                                                            {vo.error && !vo.error.toLowerCase().includes('no dialogue') && (
+                                                                <p className="text-xs text-amber-600 mt-1 truncate" title={vo.error}>Error: {vo.error}</p>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <p className="text-sm text-gray-700 mb-3 leading-relaxed">{vo.dialogue}</p>
-                                                {vo.audioUrl ? (
-                                                    <audio controls className="w-full" src={vo.audioUrl} />
-                                                ) : (
-                                                    <div className="p-3 bg-red-50 rounded border border-red-200">
-                                                        <p className="text-sm text-red-700 font-medium">⚠️ No audio generated. Click "Regenerate" above to try again.</p>
-                                                        {vo.error && (
-                                                            <p className="text-xs text-red-600 mt-1 truncate" title={vo.error}>Error: {vo.error}</p>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </>
                             )}
