@@ -2292,19 +2292,17 @@ export default function Home() {
                 )}
 
                 <div className="mb-12">
-                    {(storyboard || workflowStep > 1) && (
-                        <div className="flex justify-end max-w-4xl mx-auto mb-3">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleReset}
-                                className="flex items-center gap-2 text-gray-500 hover:text-red-600 hover:border-red-300 transition-colors"
-                            >
-                                <RotateCcw className="w-4 h-4" />
-                                Start Over
-                            </Button>
-                        </div>
-                    )}
+                    <div className="flex justify-end max-w-4xl mx-auto mb-3">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleReset}
+                            className="flex items-center gap-2 text-gray-500 hover:text-red-600 hover:border-red-300 transition-colors"
+                        >
+                            <RotateCcw className="w-4 h-4" />
+                            New Project
+                        </Button>
+                    </div>
                     <div className="flex items-center justify-between max-w-4xl mx-auto">
                         {steps.map((step, index) => (
                             <div key={step.number} className="flex items-center">
