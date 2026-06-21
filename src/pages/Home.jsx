@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Download, Wand2, Video, ChevronRight, Film, FileText, Upload, Settings as SettingsIcon, Mic, Image as ImageIcon, Music, Clock } from "lucide-react";
+import { AlertCircle, Download, Wand2, Video, ChevronRight, Film, FileText, Upload, Settings as SettingsIcon, Mic, Image as ImageIcon, Music, Clock, RotateCcw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { base44 } from "@/api/base44Client";
@@ -2229,6 +2229,33 @@ export default function Home() {
         }
     };
 
+    const handleReset = () => {
+        setScript('');
+        setReferenceImageUrl(null);
+        setCurrentStep(1);
+        setWorkflowStep(1);
+        setStepStatuses({ 1: 'current', 2: 'pending', 3: 'pending', 4: 'pending', 5: 'pending' });
+        setIsProcessing(false);
+        setProgress(0);
+        setCurrentTask('');
+        setStoryboard(null);
+        setGeneratedImages([]);
+        setVoiceovers([]);
+        setAudioData([]);
+        setVideoUrl('');
+        setGeneratedVideoBlob(null);
+        setSelectedMusicTrack(null);
+        setProjectName('');
+        setCurrentProject(null);
+        setError('');
+        setHasSelectedStoryboardModel(false);
+        setHasSelectedImageModel(false);
+        setHasSelectedVoiceModel(false);
+        setHasSelectedVideoModel(false);
+        setProjectSettings(s => ({ ...s, selected_video_model: null, video_generation_mode: 'canvas' }));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100">
             {showTutorial && userSettings && !userSettings.has_seen_tutorial && (
@@ -2265,6 +2292,19 @@ export default function Home() {
                 )}
 
                 <div className="mb-12">
+                    {(storyboard || workflowStep > 1) && (
+                        <div className="flex justify-end max-w-4xl mx-auto mb-3">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleReset}
+                                className="flex items-center gap-2 text-gray-500 hover:text-red-600 hover:border-red-300 transition-colors"
+                            >
+                                <RotateCcw className="w-4 h-4" />
+                                Start Over
+                            </Button>
+                        </div>
+                    )}
                     <div className="flex items-center justify-between max-w-4xl mx-auto">
                         {steps.map((step, index) => (
                             <div key={step.number} className="flex items-center">
