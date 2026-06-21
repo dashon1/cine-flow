@@ -146,57 +146,64 @@ export default function Home() {
     const [savedVideosKey, setSavedVideosKey] = useState(0);
 
     const saveVideoToProfile = async (videoBlob, mode, directUrl = null) => {
-        console.log('[saveVideo] start mode:', mode, 'hasBlob:', !!videoBlob, 'blobSize:', videoBlob?.size, 'directUrl:', directUrl?.slice(0, 40));
+        console.log('[saveVideo] start mode:', mode, 'hasBlob:', !!videoBlob, 'blobSize:', videoBlob?.size);
         try {
             const user = await base44.auth.me();
             console.log('[saveVideo] user:', user?.email);
-            let savedUrl = directUrl;
-            let fileSize = null;
-
-            if (videoBlob) {
-                fileSize = videoBlob.size;
-                // Strip codec params — Supabase Storage needs a plain MIME type (e.g. video/webm not video/webm;codecs=vp9)
-                const contentType = (videoBlob.type || 'video/webm').split(';')[0];
-                const ext = contentType.includes('mp4') ? 'mp4' : 'webm';
-                const safeId = String(user.id).replace(/[^a-zA-Z0-9_-]/g, '_');
-                const path = `cutsflow/videos/${safeId}/${Date.now()}.${ext}`;
-                console.log('[saveVideo] uploading', fileSize, 'bytes as', contentType, 'to', path);
-
-                const { error: uploadError } = await base44.supabase.storage
-                    .from('uploads')
-                    .upload(path, videoBlob, { cacheControl: '3600', upsert: false, contentType });
-
-                if (uploadError) {
-                    console.error('[saveVideo] upload failed:', uploadError.message);
-                    // Continue anyway — save the record without a permanent URL
-                } else {
-                    const { data: urlData } = base44.supabase.storage.from('uploads').getPublicUrl(path);
-                    savedUrl = urlData.publicUrl;
-                    console.log('[saveVideo] upload ok, url:', savedUrl?.slice(0, 60));
-                }
-            }
 
             const scenes = storyboard?.scenes || generatedImages;
             const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 5), 0);
             const thumbnailUrl = generatedImages[0]?.url || null;
-            console.log('[saveVideo] creating entity, title:', projectName || 'Untitled Video', 'duration:', totalDuration);
 
-            await base44.entities.GeneratedVideo.create({
+            // Save the record immediately so My Videos populates right away
+            const record = await base44.entities.GeneratedVideo.create({
                 title: projectName || 'Untitled Video',
-                video_url: savedUrl,
+                video_url: directUrl || null,
                 thumbnail_url: thumbnailUrl,
-                status: 'completed',
+                status: directUrl ? 'completed' : 'uploading',
                 resolution: projectSettings.resolution || '720p',
                 aspect_ratio: projectSettings.aspect_ratio || '16:9',
                 duration: totalDuration,
-                file_size: fileSize,
+                file_size: videoBlob?.size || null,
                 generation_mode: mode,
                 scenes_count: generatedImages.length,
                 created_by: user.email,
             });
-
-            console.log('[saveVideo] done ✅');
+            console.log('[saveVideo] record created id:', record?.id);
             setSavedVideosKey(k => k + 1);
+
+            // Upload blob in background, then update the record with the permanent URL
+            if (videoBlob && record?.id) {
+                (async () => {
+                    try {
+                        const contentType = (videoBlob.type || 'video/webm').split(';')[0];
+                        const ext = contentType.includes('mp4') ? 'mp4' : 'webm';
+                        const safeId = String(user.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+                        const path = `cutsflow/videos/${safeId}/${Date.now()}.${ext}`;
+                        console.log('[saveVideo] uploading', videoBlob.size, 'bytes as', contentType);
+
+                        const { error: uploadError } = await base44.supabase.storage
+                            .from('uploads')
+                            .upload(path, videoBlob, { cacheControl: '3600', upsert: false, contentType });
+
+                        if (uploadError) {
+                            console.error('[saveVideo] upload failed:', uploadError.message);
+                            await base44.entities.GeneratedVideo.update(record.id, { status: 'completed' });
+                        } else {
+                            const { data: urlData } = base44.supabase.storage.from('uploads').getPublicUrl(path);
+                            const permanentUrl = urlData.publicUrl;
+                            console.log('[saveVideo] upload ok ✅ url:', permanentUrl?.slice(0, 60));
+                            await base44.entities.GeneratedVideo.update(record.id, {
+                                video_url: permanentUrl,
+                                status: 'completed',
+                            });
+                            setSavedVideosKey(k => k + 1);
+                        }
+                    } catch (err) {
+                        console.error('[saveVideo] background upload FAILED:', err.message);
+                    }
+                })();
+            }
         } catch (err) {
             console.error('[saveVideo] FAILED:', err.message);
         }
@@ -1596,7 +1603,7 @@ export default function Home() {
 
             const mediaRecorder = new MediaRecorder(combinedStream, {
                 mimeType: selectedMimeType,
-                videoBitsPerSecond: projectSettings.resolution === '1080p' ? 5000000 : 2500000,
+                videoBitsPerSecond: projectSettings.resolution === '1080p' ? 1500000 : 800000,
                 audioBitsPerSecond: audioBuffers.length > 0 ? 128000 : undefined
             });
 
