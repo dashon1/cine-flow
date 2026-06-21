@@ -160,7 +160,7 @@ export default function Home() {
                 title: projectName || 'Untitled Video',
                 video_url: directUrl || null,
                 thumbnail_url: thumbnailUrl,
-                status: directUrl ? 'completed' : 'uploading',
+                status: 'completed',
                 resolution: projectSettings.resolution || '720p',
                 aspect_ratio: projectSettings.aspect_ratio || '16:9',
                 duration: totalDuration,
