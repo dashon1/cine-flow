@@ -146,7 +146,7 @@ export default function Home() {
     const [savedVideosKey, setSavedVideosKey] = useState(0);
 
     const saveVideoToProfile = async (videoBlob, mode, directUrl = null) => {
-        console.log('[saveVideo] called mode:', mode, 'hasBlob:', !!videoBlob, 'directUrl:', directUrl?.slice(0,40));
+        console.log('[saveVideo] start mode:', mode, 'hasBlob:', !!videoBlob, 'blobSize:', videoBlob?.size, 'directUrl:', directUrl?.slice(0, 40));
         try {
             const user = await base44.auth.me();
             console.log('[saveVideo] user:', user?.email);
@@ -155,19 +155,31 @@ export default function Home() {
 
             if (videoBlob) {
                 fileSize = videoBlob.size;
-                const ext = videoBlob.type.includes('mp4') ? 'mp4' : 'webm';
-                const path = `cutsflow/videos/${user.id}/${Date.now()}.${ext}`;
+                // Strip codec params — Supabase Storage needs a plain MIME type (e.g. video/webm not video/webm;codecs=vp9)
+                const contentType = (videoBlob.type || 'video/webm').split(';')[0];
+                const ext = contentType.includes('mp4') ? 'mp4' : 'webm';
+                const safeId = String(user.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+                const path = `cutsflow/videos/${safeId}/${Date.now()}.${ext}`;
+                console.log('[saveVideo] uploading', fileSize, 'bytes as', contentType, 'to', path);
+
                 const { error: uploadError } = await base44.supabase.storage
                     .from('uploads')
-                    .upload(path, videoBlob, { cacheControl: '3600', upsert: false, contentType: videoBlob.type });
-                if (uploadError) throw uploadError;
-                const { data: urlData } = base44.supabase.storage.from('uploads').getPublicUrl(path);
-                savedUrl = urlData.publicUrl;
+                    .upload(path, videoBlob, { cacheControl: '3600', upsert: false, contentType });
+
+                if (uploadError) {
+                    console.error('[saveVideo] upload failed:', uploadError.message);
+                    // Continue anyway — save the record without a permanent URL
+                } else {
+                    const { data: urlData } = base44.supabase.storage.from('uploads').getPublicUrl(path);
+                    savedUrl = urlData.publicUrl;
+                    console.log('[saveVideo] upload ok, url:', savedUrl?.slice(0, 60));
+                }
             }
 
             const scenes = storyboard?.scenes || generatedImages;
             const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 5), 0);
             const thumbnailUrl = generatedImages[0]?.url || null;
+            console.log('[saveVideo] creating entity, title:', projectName || 'Untitled Video', 'duration:', totalDuration);
 
             await base44.entities.GeneratedVideo.create({
                 title: projectName || 'Untitled Video',
@@ -183,9 +195,10 @@ export default function Home() {
                 created_by: user.email,
             });
 
+            console.log('[saveVideo] done ✅');
             setSavedVideosKey(k => k + 1);
         } catch (err) {
-            console.error('Failed to save video to profile:', err);
+            console.error('[saveVideo] FAILED:', err.message);
         }
     };
 
