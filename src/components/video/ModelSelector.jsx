@@ -1,7 +1,7 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Brain, Sparkles, Crown, Volume2, VideoOff } from "lucide-react";
+import { Zap, Brain, Sparkles, Crown, Volume2, VideoOff, ImagePlay } from "lucide-react";
 
 export default function ModelSelector({ 
     models, 
@@ -112,16 +112,26 @@ export default function ModelSelector({
                                             )}
                                         </div>
                                         {model.model_type === 'video' && (
-                                            <div className="flex items-center gap-1">
+                                            <div className="flex items-center gap-2 flex-wrap">
                                                 {model.has_audio ? (
                                                     <div className="flex items-center gap-1 text-xs text-green-600">
                                                         <Volume2 className="w-3 h-3" />
-                                                        <span>Audio + Video</span>
+                                                        <span>Audio</span>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex items-center gap-1 text-xs text-amber-600">
+                                                    <div className="flex items-center gap-1 text-xs text-slate-400">
                                                         <VideoOff className="w-3 h-3" />
-                                                        <span>Video Only</span>
+                                                        <span>No audio</span>
+                                                    </div>
+                                                )}
+                                                {model.has_image_input ? (
+                                                    <div className="flex items-center gap-1 text-xs text-blue-600">
+                                                        <ImagePlay className="w-3 h-3" />
+                                                        <span>Image input</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                                                        <span>Text only</span>
                                                     </div>
                                                 )}
                                             </div>
