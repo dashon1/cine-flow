@@ -460,6 +460,7 @@ export default function Home() {
                         image_size: projectSettings.aspect_ratio === '16:9' ? 'landscape_16_9' :
                             projectSettings.aspect_ratio === '9:16' ? 'portrait_9_16' : 'square',
                         reference_image_url: referenceImageUrls[0] || null,
+                        reference_image_urls: referenceImageUrls.length > 1 ? referenceImageUrls : undefined,
                         parameters: { reference_strength: projectSettings.reference_strength }
                     });
                     imageResult = falResponse?.data || falResponse;
@@ -917,7 +918,8 @@ export default function Home() {
                                 model: selectedImageModel.model_name,
                                 image_size: projectSettings.aspect_ratio === '16:9' ? 'landscape_16_9' :
                                     projectSettings.aspect_ratio === '9:16' ? 'portrait_9_16' : 'square',
-                                reference_image_url: referenceImageUrls[0] || null
+                                reference_image_url: referenceImageUrls[0] || null,
+                                reference_image_urls: referenceImageUrls.length > 1 ? referenceImageUrls : undefined,
                             });
                             return falResponse?.data || falResponse;
                         } else {
