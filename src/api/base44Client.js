@@ -104,7 +104,10 @@ function entityApi(entity) {
   };
 }
 
-// Wrap AIModelConfig to fall back to built-in models when DB is empty.
+// Wrap AIModelConfig to merge DB records with BUILTIN_MODELS.
+// DB records take precedence (same id wins); builtins fill any gaps.
+// This ensures LLM/image/TTS models always appear even when only video
+// models have been seeded into the DB.
 const _entityProxy = new Proxy({}, {
   get(_t, name) {
     if (typeof name !== 'string') return undefined;
@@ -114,15 +117,15 @@ const _entityProxy = new Proxy({}, {
         ...base,
         async list(sort, limit) {
           const rows = await base.list(sort, limit);
-          return rows.length > 0 ? rows : BUILTIN_MODELS;
+          const dbIds = new Set(rows.map(r => r.id));
+          return [...rows, ...BUILTIN_MODELS.filter(m => !dbIds.has(m.id))];
         },
         async filter(query = {}, sort, limit) {
           const rows = await base.filter(query, sort, limit);
-          if (rows.length > 0) return rows;
-          // Filter built-ins by query fields
-          let ms = BUILTIN_MODELS;
-          for (const [k, v] of Object.entries(query || {})) ms = ms.filter(m => String(m[k] ?? '') === String(v));
-          return ms;
+          const dbIds = new Set(rows.map(r => r.id));
+          let builtins = BUILTIN_MODELS.filter(m => !dbIds.has(m.id));
+          for (const [k, v] of Object.entries(query || {})) builtins = builtins.filter(m => String(m[k] ?? '') === String(v));
+          return [...rows, ...builtins];
         },
       };
     }
