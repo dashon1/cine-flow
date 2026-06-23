@@ -2856,9 +2856,9 @@ export default function Home() {
 
                         <WorkflowStepControl
                             stepNumber={4}
-                            title="Add Music & Effects"
+                            title="Choose Video Mode & Generate"
                             icon={Music}
-                            description="Select background music (optional) and configure volume before generating the final video."
+                            description="Pick your video generation mode and model, add music, then generate."
                             status={stepStatuses[4]}
                             onProceed={handleProceedToFinalVideo}
                             isProcessing={isProcessing && workflowStep === 4}
@@ -2868,6 +2868,40 @@ export default function Home() {
                             proceedButtonText="Generate Final Video"
                         >
                             <div className="space-y-4">
+                                {/* Video mode + model picker — shown first so user always sees it */}
+                                <VideoGenerationModeSelector
+                                    selectedMode={projectSettings.video_generation_mode}
+                                    onSelect={(mode) => setProjectSettings({ ...projectSettings, video_generation_mode: mode })}
+                                    userTier={userTier}
+                                />
+
+                                {availableModels.video.length > 0 && projectSettings.video_generation_mode === 'fal_ai' && (
+                                    <div className="p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
+                                        <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                                            <Video className="w-5 h-5" />
+                                            Select AI Video Model
+                                        </h4>
+                                        <ModelSelector
+                                            models={availableModels.video}
+                                            selectedModelId={projectSettings.selected_video_model}
+                                            onSelect={(modelId) => {
+                                                setProjectSettings({ ...projectSettings, selected_video_model: modelId });
+                                                setHasSelectedVideoModel(true);
+                                            }}
+                                            label="Video Model"
+                                            disabled={isProcessing}
+                                        />
+                                        {!projectSettings.selected_video_model && (
+                                            <Alert className="mt-3 border-amber-500 bg-amber-50">
+                                                <AlertCircle className="h-4 w-4 text-amber-600" />
+                                                <AlertDescription className="text-amber-800 text-sm">
+                                                    Please select a video model to continue
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Project Name
@@ -2880,36 +2914,6 @@ export default function Home() {
                                         disabled={isProcessing}
                                     />
                                 </div>
-
-                                {availableModels.video.length > 0 && projectSettings.video_generation_mode === 'fal_ai' && (
-                                    <div className="p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
-                                        <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
-                                            <Video className="w-5 h-5" />
-                                            Select Video Generation Model
-                                        </h4>
-                                        <p className="text-sm text-purple-700 mb-3">
-                                            Choose which video model to use for final video assembly
-                                        </p>
-                                        <ModelSelector
-                                            models={availableModels.video}
-                                            selectedModelId={projectSettings.selected_video_model}
-                                            onSelect={(modelId) => {
-                                                setProjectSettings({ ...projectSettings, selected_video_model: modelId });
-                                                setHasSelectedVideoModel(true);
-                                            }}
-                                            label="Video Model"
-                                            disabled={isProcessing}
-                                        />
-                                        {projectSettings.video_generation_mode === 'fal_ai' && !projectSettings.selected_video_model && (
-                                            <Alert className="mt-3 border-amber-500 bg-amber-50">
-                                                <AlertCircle className="h-4 w-4 text-amber-600" />
-                                                <AlertDescription className="text-amber-800 text-sm">
-                                                    Please select a video generation model
-                                                </AlertDescription>
-                                            </Alert>
-                                        )}
-                                    </div>
-                                )}
 
                                 <MusicSelector
                                     selectedTrackId={projectSettings.background_music}
@@ -3022,12 +3026,6 @@ export default function Home() {
                                 </motion.div>
                             )}
                         </AnimatePresence>
-
-                        <VideoGenerationModeSelector
-                            selectedMode={projectSettings.video_generation_mode}
-                            onSelect={(mode) => setProjectSettings({ ...projectSettings, video_generation_mode: mode })}
-                            userTier={userTier}
-                        />
 
                         <Card className="bg-white/60 backdrop-blur-sm shadow-xl">
                             <CardHeader className="pb-3">
