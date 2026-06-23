@@ -2494,7 +2494,7 @@ export default function Home() {
                                     <StoryboardEditor
                                         storyboard={storyboard}
                                         onUpdate={handleStoryboardUpdate}
-                                        onGenerate={() => { }}
+                                        onGenerate={handleProceedToImages}
                                     />
 
                                     {availableModels.image.length > 0 && (
