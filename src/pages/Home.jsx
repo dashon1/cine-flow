@@ -1788,7 +1788,7 @@ export default function Home() {
         setVideoUrl('');
         setIsVideoPlaying(false);
         setShowSettings(false);
-        setReferenceImageUrl(null);
+        setReferenceImageUrls([]);
         setRegeneratingSceneIndex(null);
         setProjectName('');
         if (fileInputRef.current) {
@@ -2236,7 +2236,7 @@ export default function Home() {
 
     const handleReset = () => {
         setScript('');
-        setReferenceImageUrl(null);
+        setReferenceImageUrls([]);
         setCurrentStep(1);
         setWorkflowStep(1);
         setStepStatuses({ 1: 'current', 2: 'pending', 3: 'pending', 4: 'pending', 5: 'pending' });
