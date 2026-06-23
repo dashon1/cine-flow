@@ -66,7 +66,7 @@ const SLIDE_EFFECTS = [
 export default function Home() {
     const [script, setScript] = useState('');
     const [language, setLanguage] = useState('en');
-    const [referenceImageUrl, setReferenceImageUrl] = useState(null);
+    const [referenceImageUrls, setReferenceImageUrls] = useState([]);
     const [isUploadingReference, setIsUploadingReference] = useState(false);
 
     const [currentStep, setCurrentStep] = useState(1);
@@ -259,17 +259,19 @@ export default function Home() {
     const handleReferenceImageUpload = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
+        if (referenceImageUrls.length >= 3) return;
 
         setIsUploadingReference(true);
         setError('');
         try {
             const { file_url } = await base44.integrations.Core.UploadFile({ file });
-            setReferenceImageUrl(file_url);
+            setReferenceImageUrls(prev => [...prev, file_url].slice(0, 3));
         } catch (err) {
             setError('Failed to upload reference image');
             console.error('Reference image upload error:', err);
         } finally {
             setIsUploadingReference(false);
+            event.target.value = '';
         }
     };
 
@@ -457,7 +459,7 @@ export default function Home() {
                         model: selectedImageModel.model_name,
                         image_size: projectSettings.aspect_ratio === '16:9' ? 'landscape_16_9' :
                             projectSettings.aspect_ratio === '9:16' ? 'portrait_9_16' : 'square',
-                        reference_image_url: referenceImageUrl,
+                        reference_image_url: referenceImageUrls[0] || null,
                         parameters: { reference_strength: projectSettings.reference_strength }
                     });
                     imageResult = falResponse?.data || falResponse;
@@ -915,7 +917,7 @@ export default function Home() {
                                 model: selectedImageModel.model_name,
                                 image_size: projectSettings.aspect_ratio === '16:9' ? 'landscape_16_9' :
                                     projectSettings.aspect_ratio === '9:16' ? 'portrait_9_16' : 'square',
-                                reference_image_url: referenceImageUrl
+                                reference_image_url: referenceImageUrls[0] || null
                             });
                             return falResponse?.data || falResponse;
                         } else {
@@ -1810,7 +1812,7 @@ export default function Home() {
         setScript(project.script || '');
         setLanguage(project.language || 'en');
         setProjectName(project.title || '');
-        setReferenceImageUrl(project.reference_image || null);
+        setReferenceImageUrls(project.reference_images || (project.reference_image ? [project.reference_image] : []));
         setStoryboard(project.storyboard || null);
         setGeneratedImages(project.images || []);
         setVoiceovers(project.voiceovers || []);
@@ -1889,13 +1891,13 @@ export default function Home() {
                 workflowStep,
                 stepStatuses,
                 videoUrl,
-                referenceImageUrl
+                referenceImageUrls
             };
             localStorage.setItem('videoWorkflowState', JSON.stringify(stateToSave));
         } catch (err) {
             console.warn('Failed to save state to localStorage:', err);
         }
-    }, [script, language, projectName, storyboard, generatedImages, voiceovers, projectSettings, workflowStep, stepStatuses, videoUrl, referenceImageUrl]);
+    }, [script, language, projectName, storyboard, generatedImages, voiceovers, projectSettings, workflowStep, stepStatuses, videoUrl, referenceImageUrls]);
 
     const recoverStateFromLocalStorage = useCallback(() => {
         try {
@@ -1912,7 +1914,7 @@ export default function Home() {
                 setWorkflowStep(state.workflowStep || 1);
                 setStepStatuses(state.stepStatuses || {});
                 setVideoUrl(state.videoUrl || '');
-                setReferenceImageUrl(state.referenceImageUrl || null);
+                setReferenceImageUrls(state.referenceImageUrls || (state.referenceImageUrl ? [state.referenceImageUrl] : []));
                 console.log('Recovered workflow state from localStorage');
             }
         } catch (err) {
@@ -2204,7 +2206,8 @@ export default function Home() {
                 title: projectName,
                 script,
                 language,
-                reference_image: referenceImageUrl,
+                reference_image: referenceImageUrls[0] || null,
+                reference_images: referenceImageUrls,
                 storyboard,
                 images: generatedImages,
                 voiceovers,
@@ -2439,32 +2442,23 @@ export default function Home() {
                                         Reference Image (Optional)
                                     </label>
                                     <p className="text-xs text-gray-500 mb-3">
-                                        Upload a reference image for character/style consistency across all generated scenes
+                                        Upload up to 3 reference images for character/style consistency across all generated scenes
                                     </p>
                                     <div className="flex items-center gap-3">
                                         <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => document.getElementById('reference-image-input').click()}
-                                            disabled={isUploadingReference || isProcessing}
+                                            disabled={isUploadingReference || isProcessing || referenceImageUrls.length >= 3}
                                             className="flex items-center gap-2"
                                         >
                                             <Upload className="w-4 h-4" />
-                                            {referenceImageUrl ? 'Change Reference' : 'Upload Reference'}
+                                            {referenceImageUrls.length === 0 ? 'Upload Reference' : referenceImageUrls.length >= 3 ? 'Max 3 reached' : 'Add Another'}
                                         </Button>
                                         {isUploadingReference && (
                                             <div className="w-5 h-5 border-2 border-amber-400 border-t-amber-600 rounded-full animate-spin" />
                                         )}
-                                        {referenceImageUrl && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => setReferenceImageUrl(null)}
-                                                className="text-red-600"
-                                            >
-                                                Remove
-                                            </Button>
-                                        )}
+                                        <span className="text-xs text-gray-400">{referenceImageUrls.length}/3</span>
                                     </div>
                                     <input
                                         id="reference-image-input"
@@ -2473,13 +2467,21 @@ export default function Home() {
                                         onChange={handleReferenceImageUpload}
                                         className="hidden"
                                     />
-                                    {referenceImageUrl && (
-                                        <div className="mt-3">
-                                            <img
-                                                src={referenceImageUrl}
-                                                alt="Reference"
-                                                className="w-full h-32 object-cover rounded border-2 border-amber-300"
-                                            />
+                                    {referenceImageUrls.length > 0 && (
+                                        <div className="mt-3 flex gap-2 flex-wrap">
+                                            {referenceImageUrls.map((url, idx) => (
+                                                <div key={idx} className="relative">
+                                                    <img
+                                                        src={url}
+                                                        alt={`Reference ${idx + 1}`}
+                                                        className="w-24 h-24 object-cover rounded border-2 border-amber-300"
+                                                    />
+                                                    <button
+                                                        onClick={() => setReferenceImageUrls(prev => prev.filter((_, i) => i !== idx))}
+                                                        className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center leading-none hover:bg-red-600"
+                                                    >×</button>
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
                                 </div>
@@ -2552,25 +2554,16 @@ export default function Home() {
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => document.getElementById('reference-image-input').click()}
-                                                        disabled={isUploadingReference || isProcessing}
+                                                        disabled={isUploadingReference || isProcessing || referenceImageUrls.length >= 3}
                                                         className="flex items-center gap-2"
                                                     >
                                                         <Upload className="w-4 h-4" />
-                                                        {referenceImageUrl ? 'Change Reference' : 'Upload Reference'}
+                                                        {referenceImageUrls.length === 0 ? 'Upload Reference' : referenceImageUrls.length >= 3 ? 'Max 3 reached' : 'Add Another'}
                                                     </Button>
                                                     {isUploadingReference && (
                                                         <div className="w-5 h-5 border-2 border-blue-400 border-t-blue-600 rounded-full animate-spin" />
                                                     )}
-                                                    {referenceImageUrl && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => setReferenceImageUrl(null)}
-                                                            className="text-red-600"
-                                                        >
-                                                            Remove
-                                                        </Button>
-                                                    )}
+                                                    <span className="text-xs text-gray-400">{referenceImageUrls.length}/3</span>
                                                 </div>
                                                 <input
                                                     id="reference-image-input"
@@ -2579,13 +2572,21 @@ export default function Home() {
                                                     onChange={handleReferenceImageUpload}
                                                     className="hidden"
                                                 />
-                                                {referenceImageUrl && (
-                                                    <div className="mt-3">
-                                                        <img
-                                                            src={referenceImageUrl}
-                                                            alt="Reference"
-                                                            className="w-full h-32 object-cover rounded border-2 border-blue-300"
-                                                        />
+                                                {referenceImageUrls.length > 0 && (
+                                                    <div className="mt-3 flex gap-2 flex-wrap">
+                                                        {referenceImageUrls.map((url, idx) => (
+                                                            <div key={idx} className="relative">
+                                                                <img
+                                                                    src={url}
+                                                                    alt={`Reference ${idx + 1}`}
+                                                                    className="w-24 h-24 object-cover rounded border-2 border-blue-300"
+                                                                />
+                                                                <button
+                                                                    onClick={() => setReferenceImageUrls(prev => prev.filter((_, i) => i !== idx))}
+                                                                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center leading-none hover:bg-red-600"
+                                                                >×</button>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 )}
                                             </div>
@@ -3096,7 +3097,8 @@ export default function Home() {
                                         title: projectName,
                                         script,
                                         language,
-                                        reference_image: referenceImageUrl,
+                                        reference_image: referenceImageUrls[0] || null,
+                                        reference_images: referenceImageUrls,
                                         storyboard,
                                         images: generatedImages,
                                         voiceovers,
