@@ -815,22 +815,32 @@ export default function Home() {
                 return 5;
             };
 
+            const targetDuration = storyboardData.total_duration || detectedDuration || 60;
+            const rawSceneTotal = scenesArray.reduce((sum, s) => sum + parseDuration(s.duration), 0);
+            const targetPerScene = Math.min(8, Math.max(4, Math.ceil(targetDuration / scenesArray.length)));
+
+            const processedScenes = scenesArray.map((scene, index) => {
+                const llmDuration = parseDuration(scene.duration);
+                // If LLM scenes sum to far less than target, redistribute duration evenly
+                const duration = rawSceneTotal < targetDuration * 0.7
+                    ? targetPerScene
+                    : Math.min(Math.max(llmDuration, 4), 8);
+
+                return {
+                    scene_number: scene.scene_number || (index + 1),
+                    duration: duration,
+                    visual_description: scene.visual_description || scene.description || "Scene description",
+                    dialogue: scene.dialogue || scene.dialogue_narration_text || "",
+                    camera_angle: scene.camera_angle || scene.camera_angle_suggestions || "Medium shot",
+                    mood: scene.mood || scene.mood_atmosphere || "Neutral",
+                    effect: SLIDE_EFFECTS[index % SLIDE_EFFECTS.length]
+                };
+            });
+
             const processedStoryboard = {
                 title: storyboardData.title || "Generated Video",
-                total_duration: storyboardData.total_duration || scenesArray.reduce((sum, s) => sum + parseDuration(s.duration), 0),
-                scenes: scenesArray.map((scene, index) => {
-                    const duration = Math.min(Math.max(parseDuration(scene.duration), 4), 8);
-
-                    return {
-                        scene_number: scene.scene_number || (index + 1),
-                        duration: duration,
-                        visual_description: scene.visual_description || scene.description || "Scene description",
-                        dialogue: scene.dialogue || scene.dialogue_narration_text || "",
-                        camera_angle: scene.camera_angle || scene.camera_angle_suggestions || "Medium shot",
-                        mood: scene.mood || scene.mood_atmosphere || "Neutral",
-                        effect: SLIDE_EFFECTS[index % SLIDE_EFFECTS.length]
-                    };
-                })
+                total_duration: processedScenes.reduce((sum, s) => sum + s.duration, 0),
+                scenes: processedScenes
             };
 
             console.log('Processed Storyboard:', JSON.stringify(processedStoryboard, null, 2));
@@ -2629,6 +2639,20 @@ export default function Home() {
                                         </Button>
                                     </div>
 
+                                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                        <Badge className="bg-blue-100 text-blue-800 text-xs">
+                                            {generatedImages.length} scenes
+                                        </Badge>
+                                        <Badge className="bg-green-100 text-green-800 text-xs">
+                                            {generatedImages.reduce((sum, img) => sum + (img.duration || 5), 0)}s total video
+                                        </Badge>
+                                        {storyboard?.total_duration && (
+                                            <Badge className={`text-xs ${Math.abs(generatedImages.reduce((sum, img) => sum + (img.duration || 5), 0) - storyboard.total_duration) > 10 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'}`}>
+                                                target: {storyboard.total_duration}s
+                                            </Badge>
+                                        )}
+                                    </div>
+
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
                                         {generatedImages.map((image, index) => (
                                             <div key={index} className="relative group aspect-video bg-gray-200 rounded-lg overflow-hidden">
@@ -2642,6 +2666,11 @@ export default function Home() {
                                                         <div className="absolute top-2 left-2">
                                                             <Badge className="bg-black/70 text-white">
                                                                 Scene {image.scene_number}
+                                                            </Badge>
+                                                        </div>
+                                                        <div className="absolute top-2 right-2">
+                                                            <Badge className="bg-black/70 text-white text-xs">
+                                                                {image.duration || 5}s
                                                             </Badge>
                                                         </div>
                                                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
