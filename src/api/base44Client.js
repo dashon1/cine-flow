@@ -139,7 +139,7 @@ const GUEST_KEY = 'cutsflow_guest_id';
 function getOrCreateGuest() {
   let gid = localStorage.getItem(GUEST_KEY);
   if (!gid) { gid = `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`; localStorage.setItem(GUEST_KEY, gid); }
-  return { id: gid, email: `${gid}@guest.local`, full_name: 'Creator', role: 'anon', plan_type: 'free' };
+  return { id: gid, email: `${gid}@guest.local`, full_name: 'Creator', role: 'anon', plan_type: 'pro' };
 }
 
 const BUILTIN_MODELS = [

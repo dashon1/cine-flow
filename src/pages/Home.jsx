@@ -2143,9 +2143,9 @@ export default function Home() {
             });
             setShowTutorial(true);
             setDailyUsage({ current: 0, limit: 3 });
-            setUserTier('free');
+            setUserTier('pro');
             setError('Failed to load user settings. Functionality may be limited.');
-            loadAvailableModels('free');
+            loadAvailableModels('pro');
         } finally {
             setIsLoadingSettings(false);
         }
