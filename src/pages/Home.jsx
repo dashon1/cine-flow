@@ -117,7 +117,7 @@ export default function Home() {
         tts: [],
         video: []
     });
-    const [userTier, setUserTier] = useState('free');
+    const [userTier, setUserTier] = useState('pro');
 
     const steps = [
         { number: 1, title: 'Input', icon: FileText },
@@ -930,6 +930,7 @@ export default function Home() {
                                     projectSettings.aspect_ratio === '9:16' ? 'portrait_9_16' : 'square',
                                 reference_image_url: referenceImageUrls[0] || null,
                                 reference_image_urls: referenceImageUrls.length > 1 ? referenceImageUrls : undefined,
+                                reference_strength: projectSettings.reference_strength || 0.85,
                             });
                             return falResponse?.data || falResponse;
                         } else {
