@@ -40,7 +40,7 @@ const VIDEO_MODES = [
 ];
 
 export default function VideoGenerationModeSelector({ selectedMode, onSelect, userTier = 'free' }) {
-    const availableModes = VIDEO_MODES.filter(mode => mode.tier.includes(userTier));
+    const availableModes = VIDEO_MODES;
 
     return (
         <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
@@ -114,13 +114,6 @@ export default function VideoGenerationModeSelector({ selectedMode, onSelect, us
                     </motion.div>
                 ))}
 
-                {userTier === 'free' && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <p className="text-sm text-blue-800">
-                            <strong>Upgrade to Pro</strong> to unlock AI video generation with Runway, Minimax, and professional templates.
-                        </p>
-                    </div>
-                )}
             </CardContent>
         </Card>
     );
